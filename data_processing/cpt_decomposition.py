@@ -1,12 +1,6 @@
 import math
 import numpy as np
 
-class DecomposedCurrents:
-    def __init__(self, i_active, i_reactive, i_void):
-        self.i_active = i_active
-        self.i_reactive = i_reactive
-        self.i_void = i_void
-
 class MovingAverageFilter:
     def __init__(self, window_size):
         self.window_size = window_size
@@ -146,7 +140,7 @@ class CPT_Decomposition:
         i_reactive = self._remove_transient(i_reactive)
         i_void = self._remove_transient(i_void)
         
-        return DecomposedCurrents(i_active, i_reactive, i_void)
+        return i_active, i_reactive, i_void
     
     def _remove_transient(self, signal, threshold=0.01):
         """Remove estado transitório do sinal baseado no RMS da corrente void"""

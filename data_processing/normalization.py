@@ -17,9 +17,11 @@ class Currents(Data):
         self.i_void = i_void
 
 def normalize(cpt, data): 
-    i_a = np.asarray(cpt.i_active)
-    i_r = np.asarray(cpt.i_reactive)
-    i_v = np.asarray(cpt.i_void)
+    # desempacotar tupla retornada por CPT
+    i_a, i_r, i_v = cpt
+    i_a = np.asarray(i_a)
+    i_r = np.asarray(i_r)
+    i_v = np.asarray(i_v)
 
     ia_min, ia_max = np.min(i_a), np.max(i_a)
     ir_min, ir_max = np.min(i_r), np.max(i_r)
