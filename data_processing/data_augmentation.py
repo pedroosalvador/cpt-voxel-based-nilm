@@ -67,16 +67,22 @@ def augment_dataset(X, y):
 
         print(f"{class_name:30s}: {samples_len:3d} → {target_samples:3d} [{level_assignments}]")
 
-        needed = target_samples - samples_len
+        # Add original samples first
+        augmented_voxels.extend(voxels)
+        augmented_labels.extend(labels)
 
+        # Augment to reach target
+        needed = target_samples - samples_len
         for _ in range(needed):
             idx = np.random.randint(0, samples_len)
             augmented = apply_augmentation(voxels[idx], aug)
             augmented_voxels.append(augmented)
             augmented_labels.append(class_name)
-        
-        augmented_voxels.extend(augmented_voxels)
-        augmented_labels.extend(augmented_labels)
     
     print(f"\nDataset: {len(X)} → {len(augmented_voxels)} samples")
-    return np.array(augmented_voxels), np.array(augmented_labels)
+    
+    # Convert to numpy with float32 (critical for memory!)
+    X_aug = np.array(augmented_voxels, dtype=np.float32)
+    y_aug = np.array(augmented_labels)
+    
+    return X_aug, y_aug

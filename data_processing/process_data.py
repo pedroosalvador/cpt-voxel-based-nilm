@@ -2,8 +2,6 @@ import sys, os
 import numpy as np  
 from tqdm import tqdm
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from loaders.plaid_loader import load_plaid
 from loaders.whited_loader import load_whited
 
@@ -11,6 +9,8 @@ from data_processing.cpt_decomposition import CPT
 from data_processing.voxelization import build_voxel_dataset
 from data_processing.data_augmentation import augment_dataset
 from data_processing.normalization import normalize
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def process_data(x_path, y_path, augment=False, save=False, dataset=''):
     print(f"Processing {dataset.upper()} dataset")
@@ -30,8 +30,6 @@ def process_data(x_path, y_path, augment=False, save=False, dataset=''):
               bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
         
         for sample in samples:
-            pbar.set_description(f"Processing [{sample.label:30s}]")
-            
             cpt_component = CPT(sample)
             normalized_sample = normalize(cpt_component, sample)    
             tensor = build_voxel_dataset(normalized_sample)
@@ -41,22 +39,19 @@ def process_data(x_path, y_path, augment=False, save=False, dataset=''):
             
             pbar.update(1) # update overall progress bar
 
-    # consolidate all tensors and labels
-    print(f"\n{'='*60}")
-    print("CONSOLIDATING TENSORS...")
-    print(f"{'='*60}")
-    
     X = np.concatenate(tensors, axis=0)
     y = np.array(labels)
     
     if augment:
-        print("APPLYING DATA AUGMENTATION")
+        print(f"{'-'*60}")
+        print("Applying data augmentation")
         
         X, y = augment_dataset(X, y)
+        print(f"{'-'*60}")
 
-    print(f"\n{'='*60}")
+    print(f"{'-'*60}")
     print(f"DATASET SUMMARY - {dataset.upper()}")
-    print(f"{'='*60}")
+    print(f"{'-'*60}")
     unique_classes, class_counts = np.unique(y, return_counts=True)
     
     for class_name, count in zip(unique_classes, class_counts):
@@ -70,7 +65,7 @@ def process_data(x_path, y_path, augment=False, save=False, dataset=''):
     print(f"Number of classes: {len(unique_classes)}")
     print(f"Final dataset shape: {X.shape}")
     print(f"Labels shape: {y.shape}")
-    print(f"{'='*60}")
+    print(f"\n{'─'*60}")
 
     if save:
         print(f"\nSaving processed data...")
@@ -83,9 +78,9 @@ def process_data(x_path, y_path, augment=False, save=False, dataset=''):
     return X, y 
 
 if __name__ == "__main__":
-    print("\n" + "="*60)
+    print("\n" + "─"*60)
     print("CHOOSE DATASET TO PROCESS:")
-    print("="*60)
+    print("─"*60)
 
     print("\n1 - PLAID")
     print("2 - WHITED")
@@ -109,9 +104,9 @@ if __name__ == "__main__":
             y_combined = np.concatenate((y_whited, y_plaid), axis=0)
 
             # apply augmentation to complete dataset
-            print(f"\n{'='*60}")
-            print("APPLYING DATA AUGMENTATION...")
-            print(f"{'='*60}\n")
+            print(f"\n{'-'*60}")
+            print("Applying data augmentation")
+            print(f"{'-'*60}\n")
     
             X, y = augment_dataset(X_combined, y_combined)
 

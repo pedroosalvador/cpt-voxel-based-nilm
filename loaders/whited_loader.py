@@ -3,7 +3,7 @@ import soundfile as sf
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
-from data_processing.Data import Signal
+from data_processing.Data import Data
 
 FOLDER_PATH = './datasets/WHITED'
 
@@ -31,17 +31,12 @@ def process_file(file_path):  # process a single file
     filename = os.path.basename(file_path)
     label = parse_whited_filename(filename).upper()
         
-    return Signal(
-        current=current_segment, 
-        voltage=voltage_segment,
-        label=label,
-        sampling_frequency=int(samplerate),
-        f_mains=f_mains
-    )
+    return Data(current_segment, voltage_segment, label, int(samplerate), f_mains)
 
-def load_whited():  # load whole WHITED dataset
-    print("------------------------------")
-    print("Initiating WHITED dataset loading...")
+# load whole WHITED dataset
+def load_whited():  
+    print('-'*60)
+    print("Initiating WHITED dataset loading")
         
     file_list = []
     
@@ -56,6 +51,5 @@ def load_whited():  # load whole WHITED dataset
         results = list(executor.map(process_file, file_list))
     
     print(f"Loaded {len(results)} files from WHITED dataset.")
-    print("------------------------------")
     
     return results
