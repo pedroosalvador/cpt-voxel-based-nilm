@@ -2,7 +2,7 @@ import os, json, numpy
 import polars as pl
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from data_processing.Data import Data
+from data_processing.Data import Signal
 
 FOLDER_PATH = './datasets/PLAID/submetered'
 METADATA_PATH = './datasets/PLAID/metadata_submetered.json'
@@ -19,7 +19,13 @@ def process_file(file_path, metadata): # process a single file
     current_segment = data["Current"].to_numpy()
     voltage_segment = data["Voltage"].to_numpy()
 
-    return Data(current_segment, voltage_segment, label, sampling_frequency, f_mains)
+    return Signal(
+        current=current_segment, 
+        voltage=voltage_segment, 
+        label=label, 
+        sampling_frequency=sampling_frequency, 
+        f_mains=f_mains
+    )
 
 def load_plaid(): # load whole PLAID dataset
     print("Loading PLAID dataset")
@@ -36,7 +42,7 @@ def load_plaid(): # load whole PLAID dataset
             if f.endswith('.csv'):
                 file_list.append(os.path.join(root, f))
 
-    file_list = file_list[:10]
+    #file_list = file_list[:10]
 
     # parallel loading utilizing threads and 8 workers
     with ThreadPoolExecutor(max_workers=8) as executor: 

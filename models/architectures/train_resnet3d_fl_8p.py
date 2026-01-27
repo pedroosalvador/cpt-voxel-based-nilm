@@ -11,17 +11,24 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 from FocalLoss import FocalLoss
 
-
 # ---------- load data ----------
 x_path = './preprocessed_data/X_PLAID-WHITED_RES8.npy'
 y_path = './preprocessed_data/y_PLAID-WHITED_RES8.npy'
 
 X, y = np.load(x_path), np.load(y_path)
 
+# add channel dimension if not present
+if len(X.shape) == 4:
+    X = np.expand_dims(X, axis=-1)
+
+print(f"Data shape: {X.shape}")
+print(f"Labels shape: {y.shape}")
+print(f"Unique classes: {len(np.unique(y))}")
+
 BATCH_SIZE = 32
 EPOCHS = 50
-MODEL_PATH = 'RESNET3D_PLAID-WHITED_v4_FL.keras'
-VOXEL_RESOLUTION = 32
+MODEL_PATH = 'RESNET3D_PLAID-WHITED_8p.keras'
+VOXEL_RESOLUTION = X.shape[1]  # get actual resolution from data
 NUM_CLASSES = len(np.unique(y))
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -86,28 +93,29 @@ def build_resnet3d(input_shape, num_classes):
     inputs = tf.keras.Input(shape=input_shape)
 
     # initial block
-    x = tf.keras.layers.Conv3D(32, 3, padding='same', kernel_initializer='he_normal')(inputs)
+    x = tf.keras.layers.Conv3D(16, 3, padding='same', kernel_initializer='he_normal')(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
 
-    # first convolutional block (32 filters)
-    x = residual_block_3d(x, 32, stride=1)
+    # first convolutional block (16 filters, no downsample)
+    x = residual_block_3d(x, 16, stride=1)
+    x = residual_block_3d(x, 16, stride=1)
+
+    # second convolutional block (32 filters, downsample to 4x4x4)
+    x = residual_block_3d(x, 32, stride=2)
     x = residual_block_3d(x, 32, stride=1)
 
-    # second convolutional block (64 filters, downsample)
+    # third convolutional block (64 filters, downsample to 2x2x2)
     x = residual_block_3d(x, 64, stride=2)
     x = residual_block_3d(x, 64, stride=1)
 
-    # third convolutional block (128 filters, downsample)
-    x = residual_block_3d(x, 128, stride=2)
+    # fourth convolutional block (128 filters, no downsample)
     x = residual_block_3d(x, 128, stride=1)
-
-    # fourth convolutional block (256 filters, downsample)
-    x = residual_block_3d(x, 256, stride=2)
-    x = residual_block_3d(x, 256, stride=1)
+    x = residual_block_3d(x, 128, stride=1)
 
     # classification
     x = tf.keras.layers.GlobalAveragePooling3D()(x)
+    x = tf.keras.layers.Dropout(0.3)(x)
     outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
 
     return tf.keras.Model(inputs, outputs)

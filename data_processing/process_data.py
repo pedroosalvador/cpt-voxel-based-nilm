@@ -8,7 +8,7 @@ from loaders.plaid_loader import load_plaid
 from loaders.whited_loader import load_whited
 
 from data_processing.cpt_decomposition import CPT
-from data_processing.signal_preprocessing import build_voxel_dataset
+from data_processing.voxelization import build_voxel_dataset
 from data_processing.data_augmentation import augment_dataset
 from data_processing.normalization import normalize
 
@@ -73,11 +73,11 @@ def process_data(x_path, y_path, augment=False, save=False, dataset=''):
     print(f"{'='*60}")
 
     if save:
-        print(f"\n💾 Saving processed data...")
+        print(f"\nSaving processed data...")
         np.save(x_path, X)
         np.save(y_path, y)
-        print(f"   ✓ Saved features to: {x_path}")
-        print(f"   ✓ Saved labels to: {y_path}")
+        print(f"Saved features to: {x_path}")
+        print(f"Saved labels to: {y_path}")
         print(f"{'='*60}")
 
     return X, y 
@@ -115,8 +115,8 @@ if __name__ == "__main__":
     
             X, y = augment_dataset(X_combined, y_combined)
 
-            np.save('X_PLAID-WHITED_AUG.npy', X)
-            np.save('y_PLAID-WHITED_AUG.npy', y) 
+            np.save('X_PLAID-WHITED_RES8.npy', X)
+            np.save('y_PLAID-WHITED_RES8.npy', y) 
 
         case '4':
             print("Exiting...")

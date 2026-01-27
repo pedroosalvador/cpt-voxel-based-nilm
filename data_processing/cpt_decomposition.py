@@ -72,11 +72,13 @@ class CPT_Decomposition:
         # initialize filters and calculators
         self._init_filters()
         
-        # output vectors
-        self.i_active = []
-        self.i_reactive = []
-        self.i_void = []
-        self.i_void_rms_history = []
+        # Pré-alocar arrays numpy (mais eficiente que listas)
+        signal_length = len(data_obj.current_segment)
+        self.i_active = np.zeros(signal_length, dtype=np.float32)
+        self.i_reactive = np.zeros(signal_length, dtype=np.float32)
+        self.i_void = np.zeros(signal_length, dtype=np.float32)
+        self.i_void_rms_history = np.zeros(signal_length, dtype=np.float32)
+        self._sample_index = 0  # índice atual para preencher arrays
     
     def _init_filters(self):
         self.voltage_integrator = UnbiasedIntegrator(self.dt, self.points_per_cycle)
@@ -115,30 +117,30 @@ class CPT_Decomposition:
         term2 = (reactive_power / ui_rms) ** 2 if ui_rms != 0 else 0
         i_void_rms = math.sqrt(max(i_rms ** 2 - term1 - term2, 0))
         
-        # Armazenar resultados
-        self.i_active.append(i_a)
-        self.i_reactive.append(i_r)
-        self.i_void.append(i_v)
-        self.i_void_rms_history.append(i_void_rms) # for transient removal
+        # Armazenar resultados diretamente no array (sem append)
+        idx = self._sample_index
+        self.i_active[idx] = i_a
+        self.i_reactive[idx] = i_r
+        self.i_void[idx] = i_v
+        self.i_void_rms_history[idx] = i_void_rms
+        self._sample_index += 1
     
     def decompose(self):
         """Executa decomposição CPT completa"""
         voltage_signal = self.data.voltage_segment
         current_signal = self.data.current_segment
         
+        # Resetar índice para reutilização da instância
+        self._sample_index = 0
+        
         # Processar todas as amostras
         for v, i in zip(voltage_signal, current_signal):
             self.process_sample(v, i)
         
-        # Converter para arrays numpy
-        i_active = np.array(self.i_active)
-        i_reactive = np.array(self.i_reactive)
-        i_void = np.array(self.i_void)
-        
-        # Remover estado transitório
-        i_active = self._remove_transient(i_active)
-        i_reactive = self._remove_transient(i_reactive)
-        i_void = self._remove_transient(i_void)
+        # Arrays já são numpy, apenas remover transitório
+        i_active = self._remove_transient(self.i_active)
+        i_reactive = self._remove_transient(self.i_reactive)
+        i_void = self._remove_transient(self.i_void)
         
         return i_active, i_reactive, i_void
     

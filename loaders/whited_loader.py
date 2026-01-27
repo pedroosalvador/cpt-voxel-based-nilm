@@ -3,7 +3,7 @@ import soundfile as sf
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
-from data_processing.Data import Data
+from data_processing.Data import Signal
 
 FOLDER_PATH = './datasets/WHITED'
 
@@ -31,9 +31,9 @@ def process_file(file_path):  # process a single file
     filename = os.path.basename(file_path)
     label = parse_whited_filename(filename).upper()
         
-    return Data(
-        current_segment=current_segment, 
-        voltage_segment=voltage_segment,
+    return Signal(
+        current=current_segment, 
+        voltage=voltage_segment,
         label=label,
         sampling_frequency=int(samplerate),
         f_mains=f_mains
