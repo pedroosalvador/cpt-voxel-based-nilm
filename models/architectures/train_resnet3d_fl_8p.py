@@ -12,23 +12,15 @@ from sklearn.metrics import classification_report, confusion_matrix
 from FocalLoss import FocalLoss
 
 # ---------- load data ----------
-x_path = './preprocessed_data/X_PLAID-WHITED_RES8.npy'
-y_path = './preprocessed_data/y_PLAID-WHITED_RES8.npy'
+x_path = './preprocessed_data/X_PLAID-WHITED_R8_AUG.npy'
+y_path = './preprocessed_data/y_PLAID-WHITED_R8_AUG.npy'
 
 X, y = np.load(x_path), np.load(y_path)
 
-# add channel dimension if not present
-if len(X.shape) == 4:
-    X = np.expand_dims(X, axis=-1)
-
-print(f"Data shape: {X.shape}")
-print(f"Labels shape: {y.shape}")
-print(f"Unique classes: {len(np.unique(y))}")
-
 BATCH_SIZE = 32
 EPOCHS = 50
-MODEL_PATH = 'RESNET3D_PLAID-WHITED_8p.keras'
-VOXEL_RESOLUTION = X.shape[1]  # get actual resolution from data
+MODEL_PATH = 'RESNET3D_PLAID-WHITED_R8_AUG_FL.keras'
+VOXEL_RESOLUTION = 8
 NUM_CLASSES = len(np.unique(y))
 
 X_train, X_test, y_train, y_test = train_test_split(

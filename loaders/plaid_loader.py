@@ -37,7 +37,7 @@ def load_plaid(): # load whole PLAID dataset
             if f.endswith('.csv'):
                 file_list.append(os.path.join(root, f))
 
-    #file_list = file_list[:10]
+    file_list = file_list[:500]
 
     # parallel loading utilizing threads and 8 workers
     with ThreadPoolExecutor(max_workers=8) as executor: 

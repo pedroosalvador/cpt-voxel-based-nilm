@@ -1,6 +1,7 @@
 import os, sys
 import matplotlib.pyplot as plt
 import numpy as np
+from types import SimpleNamespace
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -9,27 +10,29 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data_processing.process_data import process_data
 from data_processing.cpt_decomposition import CPT  
 
-from loaders.whited_loader import get_all_whited_data
-from loaders.plaid_loader import get_all_plaid_data
+from loaders.whited_loader import load_whited
+from loaders.plaid_loader import load_plaid
 
 # file paths
-x_path = './preprocessed_data/X_PLAID-WHITED_RAW.npy'
-y_path = './preprocessed_data/y_PLAID-WHITED_RAW.npy'
+x_path = './preprocessed_data/X_PLAID-WHITED_R8_AUG.npy'
+y_path = './preprocessed_data/y_PLAID-WHITED_R8_AUG.npy' 
 
-dados = get_all_whited_data() 
-data = dados[3]  # Select the i-th file
+dados = load_plaid() 
+data = dados[1]  # Select the i-th file
 
 dt = data.get_time_step()
 points_per_cycle = data.get_points_per_cycle() 
 DURATION = len(data.current_segment) / data.sampling_frequency  # duration in seconds
 
-cpt = CPT(data)
+cpt_result = CPT(data)
+i_active, i_reactive, i_void = cpt_result
+cpt = SimpleNamespace(i_active=i_active, i_reactive=i_reactive, i_void=i_void)
 
-t_clean = np.arange(len(cpt.i_active)) * dt
+t_clean = np.arange(len(i_active)) * dt
 t = np.arange(len(data.current_segment)) * dt
 
 # PLOTS 2D
-def plot_2d(cpt, data):
+def plot_2d(i_active, i_reactive, i_void, data, t_clean, t, DURATION):
     fig = plt.figure(figsize=(15, 10))
     
     # Título geral no topo da figura
@@ -40,9 +43,9 @@ def plot_2d(cpt, data):
     )
 
     plots = [
-        (t_clean, cpt.i_active, 'Time [s]', 'Active Current [Ia]'),
-        (t_clean, cpt.i_reactive, 'Time [s]', 'Reactive Current [Ir]'),
-        (t_clean, cpt.i_void, 'Time [s]', 'Void Current [Iv]'),
+        (t_clean, i_active, 'Time [s]', 'Active Current [Ia]'),
+        (t_clean, i_reactive, 'Time [s]', 'Reactive Current [Ir]'),
+        (t_clean, i_void, 'Time [s]', 'Void Current [Iv]'),
         (t, data.current_segment, 'Time [s]', 'Total Current [It]'),
     ]
 
@@ -239,10 +242,10 @@ def compare_voxel_statistics(voxel_dataset):
     print(f"Average mean density (non-zero): {np.mean(mean_densities):.4f}")
     
     
-    print("=" * 60)
+    print("=" * 60) 
 
 # visualize plot 2d
-fig, ax = plot_2d(cpt, data)
+fig, ax = plot_2d(i_active, i_reactive, i_void, data, t_clean, t, DURATION)
 plt.tight_layout()
 plt.show()  
 
@@ -266,4 +269,4 @@ fig = visualize_multiple_samples(X, y, indices=[301, 500, 700])
 plt.tight_layout()
 plt.show() 
 
-compare_voxel_statistics(X) 
+compare_voxel_statistics(X)  

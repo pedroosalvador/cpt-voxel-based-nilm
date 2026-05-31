@@ -14,8 +14,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.architectures.FocalLoss import FocalLoss
 
 # file paths, change as needed
-x_path = './preprocessed_data/X_PLAID-WHITED_AUG.npy'
-y_path = './preprocessed_data/y_PLAID-WHITED_AUG.npy'
+x_path = './preprocessed_data/X_PLAID-WHITED_R8_AUG.npy'
+y_path = './preprocessed_data/y_PLAID-WHITED_R8_AUG.npy'
 
 X, y = np.load(x_path), np.load(y_path)
 
@@ -23,7 +23,7 @@ X, y = np.load(x_path), np.load(y_path)
 # hyperparameters
 BATCH_SIZE = 32
 EPOCHS = 50
-MODEL_PATH = './models/checkpoints/RESNET3D_PLAID-WHITED_v3_FL.keras' # path to the trained model
+MODEL_PATH = './models/checkpoints/embedded_model.keras' # path to the trained model
 NUM_CLASSES = len(np.unique(y))
 
 model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'FocalLoss': FocalLoss})
@@ -82,7 +82,7 @@ plt.xlabel('Predicted')
 plt.ylabel('True')
 plt.title('Confusion Matrix')
 plt.tight_layout()
-plt.savefig(f'confusion_matrix_{MODEL_PATH.split("/")[-1].split(".")[0]}.png', dpi=300, bbox_inches='tight')
+""" plt.savefig(f'confusion_matrix_{MODEL_PATH.split("/")[-1].split(".")[0]}.png', dpi=300, bbox_inches='tight') """
 plt.show()
 
 # t-sne visualization
@@ -95,5 +95,5 @@ sns.scatterplot(
 )
 plt.title("t-SNE visualization of learned embeddings")
 plt.tight_layout()
-plt.savefig(f'tsne_visualization_{MODEL_PATH.split("/")[-1].split(".")[0]}.png', dpi=300, bbox_inches='tight')
+""" plt.savefig(f'tsne_visualization_{MODEL_PATH.split("/")[-1].split(".")[0]}.png', dpi=300, bbox_inches='tight') """
 plt.show()

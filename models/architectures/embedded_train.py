@@ -11,17 +11,16 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 from FocalLoss import FocalLoss
 
-
 # ---------- load data ----------
-x_path = './preprocessed_data/X_PLAID-WHITED_RES8.npy'
-y_path = './preprocessed_data/y_PLAID-WHITED_RES8.npy'
+x_path = './preprocessed_data/X_PLAID_R32.npy'
+y_path = './preprocessed_data/y_PLAID_R32.npy'
 
 X, y = np.load(x_path), np.load(y_path)
 
 BATCH_SIZE = 32
 EPOCHS = 50
-MODEL_PATH = 'RESNET3D_PLAID-WHITED_v4_FL.keras'
-VOXEL_RESOLUTION = 32
+MODEL_PATH = 'RESNET3D_PLAID-WHITED_R8_AUG_FL.keras'
+VOXEL_RESOLUTION = 8
 NUM_CLASSES = len(np.unique(y))
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -41,79 +40,69 @@ y_train_onehot = tf.keras.utils.to_categorical(y_train_int, NUM_CLASSES)
 y_true_onehot = tf.keras.utils.to_categorical(y_true, NUM_CLASSES)
 
 # ---------- build model ----------
-def residual_block_3d(x, filters, stride=1): 
+def residual_block_3d_embedded(x, filters, stride=1):
     shortcut = x
 
-    # first conv
     x = tf.keras.layers.Conv3D(
         filters,
         kernel_size=3,
         strides=stride,
         padding='same',
-        kernel_initializer='he_normal'
+        use_bias=False
     )(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
 
-    # second conv
-    x = tf.keras.layers.Conv3D(
-        filters,
-        kernel_size=3,
-        strides=1,
-        padding='same',
-        kernel_initializer='he_normal'
-    )(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-
-    # adjust shortcut when stride > 1 OR channels change
     if stride != 1 or shortcut.shape[-1] != filters:
         shortcut = tf.keras.layers.Conv3D(
             filters,
             kernel_size=1,
             strides=stride,
             padding='same',
-            kernel_initializer='he_normal'
+            use_bias=False
         )(shortcut)
         shortcut = tf.keras.layers.BatchNormalization()(shortcut)
 
-    # sum + activation
     x = tf.keras.layers.Add()([x, shortcut])
     x = tf.keras.layers.ReLU()(x)
 
     return x
 
-def build_resnet3d(input_shape, num_classes): 
+
+def build_resnet3d_embedded(input_shape, num_classes):
     inputs = tf.keras.Input(shape=input_shape)
 
-    # initial block
-    x = tf.keras.layers.Conv3D(32, 3, padding='same', kernel_initializer='he_normal')(inputs)
+    # Stem
+    x = tf.keras.layers.Conv3D(
+        8,
+        kernel_size=3,
+        padding='same',
+        use_bias=False
+    )(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
 
-    # first convolutional block (32 filters)
-    x = residual_block_3d(x, 32, stride=1)
-    x = residual_block_3d(x, 32, stride=1)
+    # Stage 1: 8×8×8
+    x = residual_block_3d_embedded(x, 8, stride=1)
 
-    # second convolutional block (64 filters, downsample)
-    x = residual_block_3d(x, 64, stride=2)
-    x = residual_block_3d(x, 64, stride=1)
+    # Stage 2: 4×4×4
+    x = residual_block_3d_embedded(x, 16, stride=2)
 
-    # third convolutional block (128 filters, downsample)
-    x = residual_block_3d(x, 128, stride=2)
-    x = residual_block_3d(x, 128, stride=1)
+    # Stage 3: 2×2×2
+    x = residual_block_3d_embedded(x, 32, stride=2)
 
-    # fourth convolutional block (256 filters, downsample)
-    x = residual_block_3d(x, 256, stride=2)
-    x = residual_block_3d(x, 256, stride=1)
-
-    # classification
+    # Head
     x = tf.keras.layers.GlobalAveragePooling3D()(x)
-    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
+    outputs = tf.keras.layers.Dense(
+        num_classes,
+        activation='softmax'
+    )(x)
 
     return tf.keras.Model(inputs, outputs)
 
+
 # ------------------ BUILD AND TRAIN ------------------
-model = build_resnet3d(
+model = build_resnet3d_embedded(
     input_shape=(VOXEL_RESOLUTION, VOXEL_RESOLUTION, VOXEL_RESOLUTION, 1),
     num_classes=NUM_CLASSES
 )

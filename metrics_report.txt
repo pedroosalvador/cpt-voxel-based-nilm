@@ -1,0 +1,30 @@
+============================================================
+MÉTRICAS DO MODELO RESNET3D - FOCAL LOSS
+============================================================
+Dataset: ./preprocessed_data/X_PLAID-WHITED_R32_AUG.npy
+Modelo: ./models/checkpoints/RESNET3D_PLAID-WHITED_AUG_FL.keras
+
+Test Loss: 0.0302
+Test Accuracy: 0.9616 (96.16%)
+
+                          precision    recall  f1-score   support
+
+         Air Conditioner       0.91      0.94      0.92        77
+            Coffee maker       1.00      1.00      1.00        66
+Compact Fluorescent Lamp       0.99      0.94      0.97        90
+                     Fan       0.91      0.94      0.93       101
+                  Fridge       0.93      0.95      0.94        66
+               Hair Iron       1.00      1.00      1.00        66
+               Hairdryer       0.98      0.90      0.94       114
+                  Heater       0.90      1.00      0.95        66
+ Incandescent Light Bulb       0.97      0.96      0.97        81
+                  Laptop       0.97      0.98      0.97        85
+               Microwave       0.95      0.99      0.97        83
+          Soldering Iron       0.99      0.99      0.99        72
+                  Vacuum       1.00      1.00      1.00        66
+         Washing Machine       0.94      0.91      0.92        66
+            Water kettle       1.00      0.97      0.99        72
+
+                accuracy                           0.96      1171
+               macro avg       0.96      0.96      0.96      1171
+            weighted avg       0.96      0.96      0.96      1171

@@ -36,7 +36,7 @@ def process_file(file_path):  # process a single file
 # load whole WHITED dataset
 def load_whited():  
     print('-'*60)
-    print("Initiating WHITED dataset loading")
+    print("Loading WHITED dataset")
         
     file_list = []
     

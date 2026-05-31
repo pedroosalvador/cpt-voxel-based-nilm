@@ -2,6 +2,8 @@ import sys, os
 import numpy as np  
 from tqdm import tqdm
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from loaders.plaid_loader import load_plaid
 from loaders.whited_loader import load_whited
 
@@ -10,11 +12,7 @@ from data_processing.voxelization import build_voxel_dataset
 from data_processing.data_augmentation import augment_dataset
 from data_processing.normalization import normalize
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-def process_data(x_path, y_path, augment=False, save=False, dataset=''):
-    print(f"Processing {dataset.upper()} dataset")
-    
+def process_data(x_path, y_path, augment=False, save=False, dataset=''):    
     # load dataset 
     if dataset.lower() == 'plaid':
         samples = load_plaid()
@@ -105,7 +103,7 @@ if __name__ == "__main__":
 
             # apply augmentation to complete dataset
             print(f"\n{'-'*60}")
-            print("Applying data augmentation")
+            print("Applying data augmentation to combined PLAID + WHITED dataset")
             print(f"{'-'*60}\n")
     
             X, y = augment_dataset(X_combined, y_combined)
