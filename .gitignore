@@ -1,7 +1,10 @@
-# Jupyter
+#virtual environment
+.venv/
+
+# jupyter
 .ipynb_checkpoints/
 
-# Python
+# python
 __pycache__/
 *.pyc
 *.pyo
@@ -19,7 +22,7 @@ datasets/
 # Outros
 .DS_Store
 
-# Preprocessed data
+# preprocessed data
 *.npy
 *.keras
 *.h5

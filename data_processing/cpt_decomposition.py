@@ -72,7 +72,7 @@ class CPT_Decomposition:
         # initialize filters and calculators
         self._init_filters()
         
-        # Pré-alocar arrays numpy (mais eficiente que listas)
+        # Pré-alocar arrays numpy (
         signal_length = len(data_obj.current_segment)
         self.i_active = np.zeros(signal_length, dtype=np.float32)
         self.i_reactive = np.zeros(signal_length, dtype=np.float32)
@@ -137,11 +137,14 @@ class CPT_Decomposition:
         for v, i in zip(voltage_signal, current_signal):
             self.process_sample(v, i)
         
-        # Arrays já são numpy, apenas remover transitório
-        i_active = self._remove_transient(self.i_active)
-        i_reactive = self._remove_transient(self.i_reactive)
-        i_void = self._remove_transient(self.i_void)
-        
+        # remover transitório
+        #i_active = self._remove_transient(self.i_active)
+        #i_reactive = self._remove_transient(self.i_reactive)
+        #i_void = self._remove_transient(self.i_void)
+        i_active = self.i_active
+        i_reactive = self.i_reactive
+        i_void = self.i_void
+
         return i_active, i_reactive, i_void
     
     def _remove_transient(self, signal, threshold=0.01):

@@ -1,9 +1,9 @@
+import sys, os
 import numpy as np
 import seaborn as sns
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from sklearn.model_selection import train_test_split
@@ -68,7 +68,6 @@ def residual_block_3d_embedded(x, filters, stride=1):
 
     return x
 
-
 def build_resnet3d_embedded(input_shape, num_classes):
     inputs = tf.keras.Input(shape=input_shape)
 
@@ -99,7 +98,6 @@ def build_resnet3d_embedded(input_shape, num_classes):
     )(x)
 
     return tf.keras.Model(inputs, outputs)
-
 
 # ------------------ BUILD AND TRAIN ------------------
 model = build_resnet3d_embedded(
